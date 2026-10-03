@@ -1,0 +1,13 @@
+name = "paperator-gateway"
+main = "src/index.js"
+compatibility_date = "2026-08-01"
+
+[vars]
+REPO_OWNER = "your-github-user"
+REPO_NAME = "paperator"
+REPO_BRANCH = "main"
+
+# Secrets (set via `npx wrangler secret put <NAME>`, never written here):
+#   GITHUB_TOKEN            - fine-grained PAT, contents:write on this repo only
+#   TELEGRAM_BOT_TOKEN      - your bot token from @BotFather
+#   TELEGRAM_WEBHOOK_SECRET - a random string, also passed to Telegram's setWebhook

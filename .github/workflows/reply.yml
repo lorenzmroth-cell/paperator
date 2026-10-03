@@ -1,0 +1,39 @@
+name: Paperator reply
+
+on:
+  push:
+    branches: [main]
+    paths: ['inbox/**']
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+# Serialize runs so two quick messages can't race each other's commit-back.
+concurrency:
+  group: paperator
+  cancel-in-progress: false
+
+jobs:
+  reply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install --quiet pypdf cryptography
+      - name: Reply to unprocessed messages
+        working-directory: agent
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        run: python3 reply.py
+      - name: Commit state back to the repo
+        run: |
+          git config user.name "paperator-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A inbox state data
+          git diff --cached --quiet || git commit -m "Paperator: process messages [skip ci]"
+          git pull --no-rebase --no-edit origin main
+          git push
